@@ -38,6 +38,15 @@ enum EasingFunction {
  */
 float getEasedValue(EasingFunction func, float t);
 
+/**
+ * @brief Converts an easing function name string to its enum value.
+ * @param easingName The name of the easing function (e.g., "linear",
+ * "cubic-in-out").
+ * @return The corresponding EasingFunction enum value. Defaults to Linear if
+ * not found.
+ */
+EasingFunction easingFromString(const String &easingName);
+
 // --- Specific Easing Function Implementations ---
 float easeLinear(float t);
 float easeSineInOut(float t);

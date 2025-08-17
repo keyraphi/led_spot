@@ -96,6 +96,13 @@ RGB hslToRgb(const HSL &hsl);
  * @return The resulting HSV color.
  */
 void rgbToHsv(const RGB &rgb, float &h, float &s, float &v);
+
+/**
+ * @brief Converts a 6-digit hex string to an RGB color struct.
+ * @param hexString The hex string (e.g., "FF5733").
+ * @return The resulting RGB color.
+ */
+RGB hexToRgb(const String &hexString);
 } // namespace ColorSpace
 
 #endif

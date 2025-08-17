@@ -35,6 +35,32 @@ float getEasedValue(EasingFunction func, float t) {
   }
 }
 
+EasingFunction easingFromString(const String &easingName) {
+  if (easingName.equalsIgnoreCase("linear")) {
+    return EasingFunction::Linear;
+  } else if (easingName.equalsIgnoreCase("sine-in-out")) {
+    return EasingFunction::SineInOut;
+  } else if (easingName.equalsIgnoreCase("quad-in-out")) {
+    return EasingFunction::QuadInOut;
+  } else if (easingName.equalsIgnoreCase("cubic-in-out")) {
+    return EasingFunction::CubicInOut;
+  } else if (easingName.equalsIgnoreCase("quart-in-out")) {
+    return EasingFunction::QuartInOut;
+  } else if (easingName.equalsIgnoreCase("quint-in-out")) {
+    return EasingFunction::QuintInOut;
+  } else if (easingName.equalsIgnoreCase("circ-in-out")) {
+    return EasingFunction::CircInOut;
+  } else if (easingName.equalsIgnoreCase("elastic-in-out")) {
+    return EasingFunction::ElasticInOut;
+  } else if (easingName.equalsIgnoreCase("back-in-out")) {
+    return EasingFunction::BackInOut;
+  } else if (easingName.equalsIgnoreCase("bounce-in-out")) {
+    return EasingFunction::BounceInOut;
+  } else {
+    return EasingFunction::Linear; // Default to linear
+  }
+}
+
 // Simple linear interpolation.
 float easeLinear(float t) { return t; }
 
