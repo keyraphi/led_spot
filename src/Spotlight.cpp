@@ -24,6 +24,8 @@ void Spotlight::begin() {
   pinMode(_redPin, OUTPUT);
   pinMode(_greenPin, OUTPUT);
   pinMode(_bluePin, OUTPUT);
+
+  Serial.begin(115200);
 }
 
 // Main update method.

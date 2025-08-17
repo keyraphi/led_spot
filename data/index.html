@@ -4,317 +4,1142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotlight Controller</title>
+  <title>Spotlight Control</title>
+  <!-- Inter Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- chroma.js for color conversions -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
     }
+
+    .color-preview {
+      width: 100%;
+      height: 4rem;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.75rem;
+    }
+
+    .color-swatch {
+      width: 2rem;
+      height: 2rem;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.5rem;
+    }
+
+    .tab-icon {
+      font-size: 1.5rem;
+    }
+
+    .kelvin-canvas {
+      width: 100%;
+      height: 2.5rem;
+    }
+
+    .hsv-canvas {
+      width: 100%;
+      touch-action: none;
+    }
+
+    /* Custom easing previews */
+    .easing-preview {
+      width: 30px;
+      height: 30px;
+      background-color: transparent;
+      border-radius: 50%;
+      position: relative;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+      animation-timing-function: linear;
+      /* The parent animation is linear */
+    }
+
+    .easing-preview::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: red;
+      border-radius: 50%;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+
+    @keyframes linear-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes sine-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes quad-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes cubic-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes quart-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes quint-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes circ-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes elastic-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes back-in-out-anim {
+      from {
+        left: 0;
+      }
+
+      to {
+        left: calc(100% - 30px);
+      }
+    }
+
+    @keyframes bounce-in-out-anim {
+      0% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-30px);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    .easing-preview[data-easing="linear"]::after {
+      animation-name: linear-anim;
+      animation-timing-function: linear;
+    }
+
+    .easing-preview[data-easing="sine-in-out"]::after {
+      animation-name: sine-in-out-anim;
+      animation-timing-function: ease-in-out;
+    }
+
+    .easing-preview[data-easing="quad-in-out"]::after {
+      animation-name: quad-in-out-anim;
+      animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+    }
+
+    .easing-preview[data-easing="cubic-in-out"]::after {
+      animation-name: cubic-in-out-anim;
+      animation-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    .easing-preview[data-easing="quart-in-out"]::after {
+      animation-name: quart-in-out-anim;
+      animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+    }
+
+    .easing-preview[data-easing="quint-in-out"]::after {
+      animation-name: quint-in-out-anim;
+      animation-timing-function: cubic-bezier(0.86, 0, 0.07, 1);
+    }
+
+    .easing-preview[data-easing="circ-in-out"]::after {
+      animation-name: circ-in-out-anim;
+      animation-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+    }
+
+    .easing-preview[data-easing="elastic-in-out"]::after {
+      animation-name: elastic-in-out-anim;
+      animation-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+      /* A simple cubic-bezier is not enough, this requires JS or a more complex keyframe */
+    }
+
+    .easing-preview[data-easing="back-in-out"]::after {
+      animation-name: back-in-out-anim;
+      animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .easing-preview[data-easing="bounce-in-out"]::after {
+      animation-name: bounce-in-out-anim;
+      animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      /* Similarly, this is complex */
+    }
+
+    /* The canvas will draw a ball that moves according to the easing function */
+    .easing-dropdown-menu .easing-preview {
+      animation: none;
+    }
   </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 sm:p-8">
-  <div class="max-w-4xl mx-auto space-y-8">
-    <!-- Main Header -->
-    <header class="text-center">
-      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Spotlight Controller</h1>
-      <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Control your ESP8266 spotlight with this simple web
-        interface.</p>
-    </header>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col justify-center items-center p-4">
 
-    <div id="statusMessage" class="hidden p-4 rounded-md text-sm text-center"></div>
+  <div id="app" class="w-full max-w-sm bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
 
-    <!-- Endpoints Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- RGB Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set RGB Color</h2>
-        <form id="rgbForm" class="space-y-4">
-          <div>
-            <label for="r" class="block text-sm font-medium">Red (0-255)</label>
-            <input type="number" id="r" value="255" min="0" max="255"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-          </div>
-          <div>
-            <label for="g" class="block text-sm font-medium">Green (0-255)</label>
-            <input type="number" id="g" value="0" min="0" max="255"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-          </div>
-          <div>
-            <label for="b" class="block text-sm font-medium">Blue (0-255)</label>
-            <input type="number" id="b" value="0" min="0" max="255"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-          </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Set RGB
-          </button>
-        </form>
-      </div>
+    <!-- Tabs / Menu -->
+    <div class="flex justify-around items-center bg-gray-700 py-3 px-2 rounded-t-2xl">
+      <button class="tab-button active p-3 rounded-xl focus:outline-none transition-all duration-300" data-tab="rgb">
+        <i class="fas fa-palette tab-icon"></i>
+      </button>
+      <button class="tab-button p-3 rounded-xl focus:outline-none transition-all duration-300" data-tab="kelvin">
+        <i class="fas fa-sun tab-icon"></i>
+      </button>
+      <button class="tab-button p-3 rounded-xl focus:outline-none transition-all duration-300" data-tab="wheel">
+        <i class="fas fa-arrow-alt-circle-right tab-icon"></i>
+      </button>
+      <button class="tab-button p-3 rounded-xl focus:outline-none transition-all duration-300" data-tab="cycle">
+        <i class="fas fa-arrows-rotate tab-icon"></i>
+      </button>
+    </div>
 
-      <!-- Kelvin Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Kelvin Color</h2>
-        <form id="kelvinForm" class="space-y-4">
-          <div>
-            <label for="kelvin" class="block text-sm font-medium">Kelvin (1500-10000)</label>
-            <input type="number" id="kelvin" value="6500" min="1500" max="10000"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-          </div>
-          <div>
-            <label for="brightness" class="block text-sm font-medium">Brightness (0.0-1.0)</label>
-            <input type="number" id="brightness" value="1.0" min="0.0" max="1.0" step="0.01"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-          </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Set Kelvin
-          </button>
-        </form>
-      </div>
+    <!-- Content Area -->
+    <div class="p-6 space-y-6">
 
-      <!-- Color Wheel Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Color Wheel Mode</h2>
-        <form id="wheelForm" class="space-y-4">
-          <div>
-            <label for="period" class="block text-sm font-medium">Period (seconds)</label>
-            <input type="number" id="period" value="10" min="0" step="0.1"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+      <!-- RGB Picker Tab -->
+      <div id="rgb-tab" class="tab-content active">
+        <h2 class="text-xl font-bold mb-4">Set RGB Color</h2>
+
+        <!-- HSV Color Wheel Canvas -->
+        <div class="relative w-full aspect-square mb-6">
+          <canvas id="hsv-canvas" class="hsv-canvas rounded-full"></canvas>
+        </div>
+
+        <!-- Color Preview & Hex Field -->
+        <div class="flex items-center space-x-4 mb-6">
+          <div id="color-preview" class="color-preview"></div>
+          <div class="flex-grow">
+            <label class="block text-sm text-gray-400">HEX</label>
+            <input type="text" id="hex-input" class="w-full bg-gray-700 text-white border-none p-2 rounded-lg"
+              value="#000000">
           </div>
-          <div class="space-y-2">
-            <label class="block text-sm font-medium">Direction</label>
-            <div class="flex items-center space-x-4">
-              <div class="flex items-center">
-                <input id="clockwise" type="radio" name="direction" value="clockwise" checked
-                  class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                <label for="clockwise" class="ml-2 text-sm">Clockwise</label>
+        </div>
+
+        <!-- Sliders for HSV/RGB -->
+        <div id="hsv-sliders">
+          <div class="mb-4">
+            <label for="hue" class="block text-sm text-gray-400">Hue</label>
+            <input type="range" id="hue" min="0" max="360" value="0"
+              class="w-full h-2 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 rounded-lg appearance-none cursor-pointer">
+          </div>
+          <div class="mb-4">
+            <label for="saturation" class="block text-sm text-gray-400">Saturation</label>
+            <input type="range" id="saturation" min="0" max="100" value="100"
+              class="w-full h-2 bg-gradient-to-r from-white to-red-500 rounded-lg appearance-none cursor-pointer">
+          </div>
+          <div class="mb-4">
+            <label for="value" class="block text-sm text-gray-400">Value</label>
+            <input type="range" id="value" min="0" max="100" value="100"
+              class="w-full h-2 bg-gradient-to-r from-gray-900 to-white rounded-lg appearance-none cursor-pointer">
+          </div>
+        </div>
+
+        <!-- Transition Settings -->
+        <div class="mt-8">
+          <div class="flex items-center justify-between cursor-pointer" onclick="toggleSection('transition-settings')">
+            <h3 class="text-lg font-semibold">Transition Settings</h3>
+            <i class="fas fa-chevron-down transform transition-transform duration-300"
+              id="transition-settings-icon"></i>
+          </div>
+          <div id="transition-settings" class="mt-4 space-y-4 hidden">
+            <div>
+              <label for="transition-duration" class="block text-sm text-gray-400">Duration (<span
+                  id="transition-duration-value">2.0</span> s)</label>
+              <input type="range" id="transition-duration" min="0.1" max="10" step="0.1" value="2.0"
+                class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-700">
+            </div>
+            <div class="relative">
+              <label for="transition-easing-dropdown" class="block text-sm text-gray-400">Easing Function</label>
+              <div id="transition-easing-dropdown"
+                class="w-full p-2 bg-gray-700 rounded-lg cursor-pointer flex items-center justify-between">
+                <span id="transition-easing-label">Linear</span>
+                <i class="fas fa-chevron-down text-gray-400"></i>
               </div>
-              <div class="flex items-center">
-                <input id="counterclockwise" type="radio" name="direction" value="counterclockwise"
-                  class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                <label for="counterclockwise" class="ml-2 text-sm">Counter-clockwise</label>
+              <div id="transition-easing-menu"
+                class="absolute z-10 hidden w-full mt-2 bg-gray-700 rounded-lg shadow-lg">
+                <!-- Easing options will be populated here by JS -->
               </div>
             </div>
           </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Start Color Wheel
-          </button>
-        </form>
+        </div>
+
       </div>
 
-      <!-- Color Cycle Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Color Cycle Mode</h2>
-        <form id="cycleForm" class="space-y-4">
-          <div>
-            <label for="colors" class="block text-sm font-medium">Colors (comma-separated hex)</label>
-            <textarea id="colors" rows="2"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2"
-              placeholder="FF0000,00FF00,0000FF"></textarea>
-          </div>
-          <div class="flex items-center">
-            <input id="random" type="checkbox"
-              class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-            <label for="random" class="ml-2 block text-sm">Random Order</label>
-          </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Start Color Cycle
-          </button>
-        </form>
+      <!-- Kelvin Tab -->
+      <div id="kelvin-tab" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">Set Color Temperature</h2>
+
+        <p id="kelvin-label" class="text-center text-lg font-bold mb-4">6500 K</p>
+
+        <!-- Kelvin slider -->
+        <div class="relative mb-6 bg-black rounded-lg p-2">
+          <canvas id="kelvin-canvas" class="kelvin-canvas rounded-lg"></canvas>
+        </div>
+
+        <!-- Brightness slider -->
+        <div>
+          <label for="kelvin-brightness" class="block text-sm text-gray-400">Brightness (<span
+              id="kelvin-brightness-value">100</span> %)</label>
+          <input type="range" id="kelvin-brightness" min="0" max="100" value="100"
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-700">
+        </div>
       </div>
 
-      <!-- Cycle Duration Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Cycle Duration</h2>
-        <form id="cycleDurationForm" class="space-y-4">
-          <div>
-            <label for="cycleDuration" class="block text-sm font-medium">Duration (seconds)</label>
-            <input type="number" id="cycleDuration" value="2.0" min="0" step="0.1"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+      <!-- Color Wheel Tab -->
+      <div id="wheel-tab" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">Color Wheel Mode</h2>
+
+        <!-- Visual Preview -->
+        <div class="relative w-full aspect-square mb-6 bg-gray-700 rounded-full flex items-center justify-center">
+          <svg id="wheel-preview-svg" viewBox="0 0 100 100" class="w-2/3 h-2/3">
+            <!-- Outer ring for color wheel -->
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:rgb(255,0,0)" />
+                <stop offset="16.66%" style="stop-color:rgb(255,255,0)" />
+                <stop offset="33.33%" style="stop-color:rgb(0,255,0)" />
+                <stop offset="50%" style="stop-color:rgb(0,255,255)" />
+                <stop offset="66.66%" style="stop-color:rgb(0,0,255)" />
+                <stop offset="83.33%" style="stop-color:rgb(255,0,255)" />
+                <stop offset="100%" style="stop-color:rgb(255,0,0)" />
+              </linearGradient>
+            </defs>
+            <!-- To create the color wheel effect we can use a circle mask -->
+            <path id="wheel-path" d="M 50 50 m 0 -50 a 50 50 0 1 1 0 100 a 50 50 0 1 1 0 -100" fill="url(#gradient)">
+            </path>
+            <!-- Inner circle to mask the center -->
+            <circle cx="50" cy="50" r="30" fill="white" />
+            <!-- Spinning arrows -->
+            <g id="wheel-arrow-group" transform="rotate(0, 50, 50)">
+              <path d="M 50 25 L 55 35 L 45 35 Z" fill="#fff" />
+              <path d="M 50 75 L 55 65 L 45 65 Z" fill="#fff" transform="rotate(180, 50, 50)" />
+            </g>
+          </svg>
+          <div id="wheel-preview-overlay" class="absolute w-2/3 h-2/3 rounded-full" style="background-color: white;">
           </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Set Duration
-          </button>
-        </form>
+        </div>
+
+        <!-- Direction and Duration controls -->
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-gray-400">Direction:</span>
+          <div class="flex space-x-2">
+            <button id="wheel-direction-clockwise"
+              class="p-2 w-1/2 rounded-lg bg-blue-500 text-white font-semibold">Clockwise</button>
+            <button id="wheel-direction-counter"
+              class="p-2 w-1/2 rounded-lg bg-gray-700 text-white font-semibold">Counter-Clockwise</button>
+          </div>
+        </div>
+        <div>
+          <label for="wheel-period" class="block text-sm text-gray-400">Period (<span
+              id="wheel-period-value">10.0</span> s)</label>
+          <input type="range" id="wheel-period" min="1" max="60" step="0.1" value="10"
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-700">
+        </div>
       </div>
 
-      <!-- Cycle Easing Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Cycle Easing</h2>
-        <form id="cycleEasingForm" class="space-y-4">
-          <div>
-            <label for="cycleEasing" class="block text-sm font-medium">Easing Function</label>
-            <select id="cycleEasing"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-              <option value="linear">linear</option>
-              <option value="sine-in-out">sine-in-out</option>
-              <option value="quad-in-out">quad-in-out</option>
-              <option value="cubic-in-out" selected>cubic-in-out</option>
-              <option value="quart-in-out">quart-in-out</option>
-              <option value="quint-in-out">quint-in-out</option>
-              <option value="circ-in-out">circ-in-out</option>
-              <option value="elastic-in-out">elastic-in-out</option>
-              <option value="back-in-out">back-in-out</option>
-              <option value="bounce-in-out">bounce-in-out</option>
-            </select>
-          </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Set Easing
-          </button>
-        </form>
-      </div>
+      <!-- Color Cycle Tab -->
+      <div id="cycle-tab" class="tab-content hidden">
+        <h2 class="text-xl font-bold mb-4">Color Cycle Mode</h2>
 
-      <!-- Transition Duration Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Transition Duration</h2>
-        <form id="transitionDurationForm" class="space-y-4">
-          <div>
-            <label for="transitionDuration" class="block text-sm font-medium">Duration (seconds)</label>
-            <input type="number" id="transitionDuration" value="0.2" min="0" step="0.1"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+        <div class="bg-gray-700 rounded-xl p-4 mb-4">
+          <h3 class="text-lg font-semibold mb-2">Add Color</h3>
+          <!-- RGB Color Picker (Reusable) -->
+          <div id="cycle-rgb-picker">
+            <div class="relative w-full aspect-square mb-6">
+              <canvas id="cycle-hsv-canvas" class="hsv-canvas rounded-full"></canvas>
+            </div>
+            <div class="flex items-center space-x-4 mb-4">
+              <div id="cycle-color-preview" class="color-preview"></div>
+              <div class="flex-grow">
+                <label class="block text-sm text-gray-400">HEX</label>
+                <input type="text" id="cycle-hex-input"
+                  class="w-full bg-gray-600 text-white border-none p-2 rounded-lg">
+              </div>
+            </div>
+            <div id="cycle-hsv-sliders">
+              <div class="mb-4">
+                <label for="cycle-hue" class="block text-sm text-gray-400">Hue</label>
+                <input type="range" id="cycle-hue" min="0" max="360" value="0"
+                  class="w-full h-2 bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 rounded-lg appearance-none cursor-pointer">
+              </div>
+              <div class="mb-4">
+                <label for="cycle-saturation" class="block text-sm text-gray-400">Saturation</label>
+                <input type="range" id="cycle-saturation" min="0" max="100" value="100"
+                  class="w-full h-2 bg-gradient-to-r from-white to-red-500 rounded-lg appearance-none cursor-pointer">
+              </div>
+              <div class="mb-4">
+                <label for="cycle-value" class="block text-sm text-gray-400">Value</label>
+                <input type="range" id="cycle-value" min="0" max="100" value="100"
+                  class="w-full h-2 bg-gradient-to-r from-gray-900 to-white rounded-lg appearance-none cursor-pointer">
+              </div>
+            </div>
           </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Set Duration
-          </button>
-        </form>
-      </div>
 
-      <!-- Transition Easing Form -->
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold mb-4">Set Transition Easing</h2>
-        <form id="transitionEasingForm" class="space-y-4">
-          <div>
-            <label for="transitionEasing" class="block text-sm font-medium">Easing Function</label>
-            <select id="transitionEasing"
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
-              <option value="linear">linear</option>
-              <option value="sine-in-out">sine-in-out</option>
-              <option value="quad-in-out">quad-in-out</option>
-              <option value="cubic-in-out" selected>cubic-in-out</option>
-              <option value="quart-in-out">quart-in-out</option>
-              <option value="quint-in-out">quint-in-out</option>
-              <option value="circ-in-out">circ-in-out</option>
-              <option value="elastic-in-out">elastic-in-out</option>
-              <option value="back-in-out">back-in-out</option>
-              <option value="bounce-in-out">bounce-in-out</option>
-            </select>
-          </div>
-          <button type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Set Easing
+          <button id="add-color-btn"
+            class="w-full py-2 bg-blue-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105 active:scale-95">
+            <i class="fas fa-plus"></i> Add Color
           </button>
-        </form>
+        </div>
+
+        <!-- Color List -->
+        <div class="bg-gray-700 rounded-xl p-4 mb-4">
+          <h3 class="text-lg font-semibold mb-2">Color List</h3>
+          <ul id="color-list" class="space-y-2">
+            <!-- Color items will be added here -->
+          </ul>
+        </div>
+
+        <!-- Cycle Settings -->
+        <div class="bg-gray-700 rounded-xl p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-400">Randomize Order:</span>
+            <input type="checkbox" id="random-cycle-toggle" class="form-checkbox h-5 w-5 text-blue-600 rounded-md">
+          </div>
+          <div>
+            <label for="cycle-duration" class="block text-sm text-gray-400">Duration (<span
+                id="cycle-duration-value">2.0</span> s)</label>
+            <input type="range" id="cycle-duration" min="0.1" max="10" step="0.1" value="2.0"
+              class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-600">
+          </div>
+          <div class="relative">
+            <label for="cycle-easing-dropdown" class="block text-sm text-gray-400">Easing Function</label>
+            <div id="cycle-easing-dropdown"
+              class="w-full p-2 bg-gray-600 rounded-lg cursor-pointer flex items-center justify-between">
+              <span id="cycle-easing-label">Linear</span>
+              <i class="fas fa-chevron-down text-gray-400"></i>
+            </div>
+            <div id="cycle-easing-menu" class="absolute z-10 hidden w-full mt-2 bg-gray-600 rounded-lg shadow-lg">
+              <!-- Easing options will be populated here by JS -->
+            </div>
+          </div>
+          <button id="upload-cycle-btn"
+            class="w-full py-3 bg-blue-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105 active:scale-95">
+            <i class="fas fa-upload"></i> Upload & Start Cycle
+          </button>
+        </div>
       </div>
 
     </div>
   </div>
+
   <script>
-    // Helper function to show status messages
-    function showStatus(message, isSuccess = true) {
-      const statusDiv = document.getElementById('statusMessage');
-      statusDiv.textContent = message;
-      statusDiv.classList.remove('hidden', 'bg-red-200', 'text-red-800', 'bg-green-200', 'text-green-800');
-      if (isSuccess) {
-        statusDiv.classList.add('bg-green-200', 'text-green-800');
+    // Constants & Global State
+    const API_URLS = {
+      rgb: 'rgb',
+      kelvin: 'kelvin',
+      wheel: 'wheel',
+      cycle: 'cycle',
+      setTransitionDuration: 'setTransitionDuration',
+      setTransitionEasing: 'setTransitionEasing',
+      setCycleDuration: 'setCycleDuration',
+      setCycleEasing: 'setCycleEasing'
+    };
+
+    // Easing functions for previews
+    const Easing = {
+      linear: t => t,
+      sineInOut: t => -0.5 * (Math.cos(Math.PI * t) - 1),
+      quadInOut: t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+      cubicInOut: t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+      quartInOut: t => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2,
+      quintInOut: t => t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2,
+      circInOut: t => t < 0.5 ? -(Math.sqrt(1 - Math.pow(2 * t, 2)) - 1) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2,
+      elasticInOut: t => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * 2 * Math.PI / 0.45)) / 2 : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * 2 * Math.PI / 0.45)) / 2 + 1,
+      backInOut: t => {
+        const c1 = 1.70158;
+        const c2 = c1 * 1.525;
+        return t < 0.5 ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2 : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+      },
+      bounceInOut: t => {
+        const bounce = x => {
+          const n1 = 7.5625;
+          const d1 = 2.75;
+          if (x < 1 / d1) return n1 * x * x;
+          else if (x < 2 / d1) return n1 * (x -= 1.5 / d1) * x + 0.75;
+          else if (x < 2.5 / d1) return n1 * (x -= 2.25 / d1) * x + 0.9375;
+          else return n1 * (x -= 2.625 / d1) * x + 0.984375;
+        };
+        return t < 0.5 ? (1 - bounce(1 - 2 * t)) / 2 : (1 + bounce(2 * t - 1)) / 2;
+      }
+    };
+
+    // UI Elements
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // RGB Tab Elements
+    const hsvCanvas = document.getElementById('hsv-canvas');
+    const hsvCtx = hsvCanvas.getContext('2d');
+    const hueSlider = document.getElementById('hue');
+    const saturationSlider = document.getElementById('saturation');
+    const valueSlider = document.getElementById('value');
+    const colorPreview = document.getElementById('color-preview');
+    const hexInput = document.getElementById('hex-input');
+
+    // Transition Settings Elements
+    const transitionSettings = document.getElementById('transition-settings');
+    const transitionDurationSlider = document.getElementById('transition-duration');
+    const transitionDurationValue = document.getElementById('transition-duration-value');
+    const transitionEasingDropdown = document.getElementById('transition-easing-dropdown');
+    const transitionEasingLabel = document.getElementById('transition-easing-label');
+    const transitionEasingMenu = document.getElementById('transition-easing-menu');
+    const easingFunctions = ['Linear', 'SineInOut', 'QuadInOut', 'CubicInOut', 'QuartInOut', 'QuintInOut', 'CircInOut', 'ElasticInOut', 'BackInOut', 'BounceInOut'];
+
+    // Kelvin Tab Elements
+    const kelvinCanvas = document.getElementById('kelvin-canvas');
+    const kelvinCtx = kelvinCanvas.getContext('2d');
+    const kelvinLabel = document.getElementById('kelvin-label');
+    const kelvinBrightnessSlider = document.getElementById('kelvin-brightness');
+    const kelvinBrightnessValue = document.getElementById('kelvin-brightness-value');
+
+    // Wheel Tab Elements
+    const wheelPeriodSlider = document.getElementById('wheel-period');
+    const wheelPeriodValue = document.getElementById('wheel-period-value');
+    const wheelDirectionClockwise = document.getElementById('wheel-direction-clockwise');
+    const wheelDirectionCounter = document.getElementById('wheel-direction-counter');
+    const wheelArrowGroup = document.getElementById('wheel-arrow-group');
+    const wheelPreviewOverlay = document.getElementById('wheel-preview-overlay');
+
+    // Cycle Tab Elements
+    const cycleHsvCanvas = document.getElementById('cycle-hsv-canvas');
+    const cycleHsvCtx = cycleHsvCanvas.getContext('2d');
+    const cycleHueSlider = document.getElementById('cycle-hue');
+    const cycleSaturationSlider = document.getElementById('cycle-saturation');
+    const cycleValueSlider = document.getElementById('cycle-value');
+    const cycleColorPreview = document.getElementById('cycle-color-preview');
+    const cycleHexInput = document.getElementById('cycle-hex-input');
+    const addColorBtn = document.getElementById('add-color-btn');
+    const colorList = document.getElementById('color-list');
+    const randomCycleToggle = document.getElementById('random-cycle-toggle');
+    const cycleDurationSlider = document.getElementById('cycle-duration');
+    const cycleDurationValue = document.getElementById('cycle-duration-value');
+    const cycleEasingDropdown = document.getElementById('cycle-easing-dropdown');
+    const cycleEasingLabel = document.getElementById('cycle-easing-label');
+    const cycleEasingMenu = document.getElementById('cycle-easing-menu');
+    const uploadCycleBtn = document.getElementById('upload-cycle-btn');
+    let colorCycleArray = [];
+
+    // State for HSV Picker
+    let activeHSVCanvas = hsvCanvas;
+    let activeHSVctx = hsvCtx;
+    let activeHueSlider = hueSlider;
+    let activeSaturationSlider = saturationSlider;
+    let activeValueSlider = valueSlider;
+    let activeColorPreview = colorPreview;
+    let activeHexInput = hexInput;
+    let isDragging = false;
+    let currentHSV = {h: 0, s: 1, v: 1};
+    let currentRGB = {r: 0, g: 0, b: 0};
+
+    // --- Debounce Utility ---
+    const debounce = (func, delay) => {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), delay);
+      };
+    };
+
+    // --- General UI Functions ---
+    const switchTab = (tabId) => {
+      tabButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-600', 'text-white'));
+      tabContents.forEach(content => content.classList.add('hidden'));
+
+      const newActiveBtn = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+      const newActiveContent = document.getElementById(`${tabId}-tab`);
+
+      newActiveBtn.classList.add('active', 'bg-blue-600', 'text-white');
+      newActiveContent.classList.remove('hidden');
+
+      // Set active canvas/sliders for RGB picker
+      if (tabId === 'rgb') {
+        activeHSVCanvas = hsvCanvas;
+        activeHSVctx = hsvCtx;
+        activeHueSlider = hueSlider;
+        activeSaturationSlider = saturationSlider;
+        activeValueSlider = valueSlider;
+        activeColorPreview = colorPreview;
+        activeHexInput = hexInput;
+      } else if (tabId === 'cycle') {
+        activeHSVCanvas = cycleHsvCanvas;
+        activeHSVctx = cycleHsvCtx;
+        activeHueSlider = cycleHueSlider;
+        activeSaturationSlider = cycleSaturationSlider;
+        activeValueSlider = cycleValueSlider;
+        activeColorPreview = cycleColorPreview;
+        activeHexInput = cycleHexInput;
+      }
+
+      // Redraw canvas content on tab switch
+      if (tabId === 'kelvin') {
+        drawKelvinSlider();
+        updateKelvinUI();
       } else {
-        statusDiv.classList.add('bg-red-200', 'text-red-800');
+        drawHsvCanvas();
       }
-    }
+    };
 
-    // Generic function to send a GET request
-    async function sendGetRequest(endpoint, params = {}) {
-      // Use window.location.host, which is the IP or hostname of the device itself.
-      const url = new URL(`http://${window.location.host}/${endpoint}`);
-      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-
-      showStatus('Sending request...', true);
-
+    // Function to handle fetch requests to the ESP
+    const sendToEsp = async (endpoint, params = {}) => {
+      const queryString = new URLSearchParams(params).toString();
+      const url = `/${endpoint}?${queryString}`;
+      console.log(`Sending to ESP: ${url}`);
       try {
-        const response = await fetch(url.toString(), {
-          method: 'GET',
-          mode: 'no-cors' // Use no-cors mode to avoid CORS issues
-        });
-
-        if (response.ok || response.type === 'opaque') {
-          showStatus(`Successfully sent request to /${endpoint}`, true);
-        } else {
-          showStatus(`Failed to send request to /${endpoint}. Status: ${response.status}`, false);
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.error(`HTTP error! status: ${response.status}`);
         }
-      } catch (error) {
-        showStatus(`An error occurred: ${error.message}`, false);
+      } catch (e) {
+        console.error('Fetch failed:', e);
       }
+    };
+
+    // Toggle collapsible section
+    function toggleSection(id) {
+      const section = document.getElementById(id);
+      const icon = document.getElementById(`${id}-icon`);
+      section.classList.toggle('hidden');
+      icon.classList.toggle('rotate-180');
     }
 
-    // RGB Form Handler
-    document.getElementById('rgbForm').addEventListener('submit', (e) => {
+    // --- Easing Dropdown Logic (Reusable) ---
+    function setupEasingDropdown(dropdownId, labelId, menuId, onEasingChange) {
+      const dropdown = document.getElementById(dropdownId);
+      const label = document.getElementById(labelId);
+      const menu = document.getElementById(menuId);
+
+      // Populate the dropdown menu
+      easingFunctions.forEach(func => {
+        const easingName = func.replace(/([A-Z])/g, '-$1').toLowerCase();
+        const option = document.createElement('div');
+        option.className = 'flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-500 cursor-pointer';
+        option.setAttribute('data-easing', easingName);
+        option.innerHTML = `
+                <div class="w-10 h-10 relative">
+                    <div class="absolute w-full h-full easing-preview" data-easing="${easingName}"></div>
+                </div>
+                <span>${func}</span>
+            `;
+        option.addEventListener('click', () => {
+          label.textContent = func;
+          menu.classList.add('hidden');
+          onEasingChange(easingName);
+        });
+        menu.appendChild(option);
+      });
+
+      // Toggle the menu
+      dropdown.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+    }
+
+    const hsv2rgb = (hue, saturation, value) => {
+      const hsv_helper = (n) => {
+        const k = (n + hue / 60) % 6;
+        return value - value * saturation * Math.max(0, Math.min(k, 4 - k, 1));
+      }
+      const red = hsv_helper(5);
+      const green = hsv_helper(3);
+      const blue = hsv_helper(1);
+      return Array(Math.floor(255 * red), Math.floor(255 * green), Math.floor(255 * blue));
+    }
+
+    // --- RGB Color Picker Logic ---
+    const drawHsvCanvas = () => {
+      const canvas = activeHSVCanvas;
+      const ctx = activeHSVctx;
+      const width = canvas.width = canvas.offsetWidth;
+      const height = canvas.height = canvas.offsetWidth; // Make it a square
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = Math.min(centerX, centerY);
+
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      // Draw the color wheel
+      for (let y = 0; y <= height; y += 1) {
+        for (let x = 0; x <= width; x += 1) {
+          const i = 4 * (y * width + x);
+          const dx = x - radius;
+          const dy = y - radius;
+          const rho = Math.sqrt(dx * dx + dy * dy);
+          if (rho > radius) {
+            data[i] = 0; // red
+            data[i + 1] = 0; // green
+            data[i + 2] = 0; // blue
+            data[i + 3] = 0; // alpha
+            continue;
+          }
+          const phi = Math.atan2(dy, dx);
+          const hue = (phi * 180) / Math.PI;
+          const saturation = rho / radius;
+          const rgb = hsv2rgb(hue, saturation, currentHSV.v);
+          data[i] = rgb[0]; // red
+          data[i + 1] = rgb[1]; // green
+          data[i + 2] = rgb[2]; // blue
+          data[i + 3] = 255; // alpha
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      // Draw the picker circle
+      const circleRadius = radius * currentHSV.s;
+      const circleX = centerX + circleRadius * Math.cos((currentHSV.h) * Math.PI / 180);
+      const circleY = centerY + circleRadius * Math.sin((currentHSV.h) * Math.PI / 180);
+
+      ctx.beginPath();
+      ctx.arc(circleX, circleY, 8, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    };
+
+    const updateFromCanvas = (e) => {
+      if (!isDragging) return;
+
+      const canvas = activeHSVCanvas;
+      const rect = canvas.getBoundingClientRect();
+      let clientX, clientY;
+
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      const x = clientX - rect.left - canvas.width / 2;
+      const y = clientY - rect.height / 2 - rect.top;
+      const distance = Math.sqrt(x * x + y * y);
+      const radius = canvas.width / 2;
+
+      currentHSV.h = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      currentHSV.s = Math.min(1, distance / radius);
+
+      updateHsvSliders();
+      updateRgbFromHsv();
+      drawHsvCanvas();
+    };
+
+    const updateHsvSliders = () => {
+      activeHueSlider.value = currentHSV.h;
+      activeSaturationSlider.value = Math.round(currentHSV.s * 100);
+      activeValueSlider.value = Math.round(currentHSV.v * 100);
+    };
+
+    const updateRgbFromHsv = () => {
+      const rgb = chroma.hsv(currentHSV.h, currentHSV.s, currentHSV.v).rgb();
+      currentRGB = {r: rgb[0], g: rgb[1], b: rgb[2]};
+      updatePreviewAndHex();
+    };
+
+    const updateHsvFromSliders = () => {
+      currentHSV.h = parseFloat(activeHueSlider.value);
+      currentHSV.s = parseFloat(activeSaturationSlider.value) / 100;
+      currentHSV.v = parseFloat(activeValueSlider.value) / 100;
+      updateRgbFromHsv();
+      drawHsvCanvas(); // Redraw canvas as value has changed
+    };
+
+    const updatePreviewAndHex = () => {
+      const hex = chroma(currentRGB.r, currentRGB.g, currentRGB.b).hex();
+      activeColorPreview.style.backgroundColor = hex;
+      activeHexInput.value = hex;
+      // Don't send API call if we are in the cycle tab
+      if (document.querySelector('.tab-button.active').dataset.tab === 'rgb') {
+        debouncedSendRgb();
+      }
+    };
+
+    const debouncedSendRgb = debounce(() => {
+      sendToEsp(API_URLS.rgb, {
+        r: currentRGB.r,
+        g: currentRGB.g,
+        b: currentRGB.b
+      });
+    }, 50);
+
+    // --- Kelvin Picker Logic ---
+    const drawKelvinSlider = () => {
+      const canvas = kelvinCanvas;
+      const ctx = kelvinCtx;
+      const width = canvas.width = canvas.offsetWidth;
+      const height = canvas.height = canvas.offsetHeight;
+
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+
+      // Kelvin range
+      const startKelvin = 2000;
+      const endKelvin = 6500;
+      const kelvinStep = (endKelvin - startKelvin) / 100;
+
+      for (let i = 0; i <= 100; i++) {
+        const kelvin = startKelvin + (i * kelvinStep);
+        const rgb = kelvinToRgb(kelvin);
+        gradient.addColorStop(i / 100, `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`);
+      }
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    };
+
+    // Simple Kelvin to RGB conversion ported from C++
+    const kelvinToRgb = (kelvin) => {
+      let temp = kelvin / 100.0;
+      let r, g, b;
+
+      if (temp <= 66) {
+        r = 255;
+        g = 99.4708025861 * Math.log(temp) - 161.1195681661;
+        b = temp > 19 ? 138.5177312231 * Math.log(temp - 10) - 305.0447927307 : 0;
+      } else {
+        r = 329.698727446 * Math.pow(temp - 60, -0.1332047592);
+        g = 288.1221695283 * Math.pow(temp - 60, -0.0755148492);
+        b = 255;
+      }
+
+      return {
+        r: Math.min(255, Math.max(0, r)),
+        g: Math.min(255, Math.max(0, g)),
+        b: Math.min(255, Math.max(0, b))
+      };
+    };
+
+    const updateKelvinUI = () => {
+      const kelvin = kelvinCanvas.kelvinValue;
+      const brightness = kelvinBrightnessSlider.value / 100.0;
+      kelvinLabel.textContent = `${Math.round(kelvin)} K`;
+      kelvinBrightnessValue.textContent = Math.round(brightness * 100);
+
+      const color = kelvinToRgb(kelvin);
+      const finalColor = chroma(color.r, color.g, color.b).set('rgb.r', '*' + brightness).set('rgb.g', '*' + brightness).set('rgb.b', '*' + brightness).rgb();
+      document.body.style.backgroundColor = `rgb(${finalColor[0]}, ${finalColor[1]}, ${finalColor[2]})`;
+    };
+
+    const debouncedSendKelvin = debounce(() => {
+      sendToEsp(API_URLS.kelvin, {
+        kelvin: Math.round(kelvinCanvas.kelvinValue),
+        brightness: parseFloat(kelvinBrightnessSlider.value) / 100
+      });
+    }, 50);
+
+    // --- Color Wheel Mode Logic ---
+    let wheelDirection = 'clockwise';
+    let wheelPeriod = 10;
+
+    const updateWheelUI = () => {
+      const arrowSvg = wheelArrowGroup;
+      const style = document.createElement('style');
+      style.innerHTML = `
+            @keyframes spin-${wheelDirection} {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(${wheelDirection === 'clockwise' ? '360' : '-360'}deg); }
+            }
+        `;
+      document.head.appendChild(style);
+      arrowSvg.style.animation = `spin-${wheelDirection} ${wheelPeriod}s linear infinite`;
+      wheelPeriodValue.textContent = wheelPeriod;
+    };
+
+    const sendWheelMode = () => {
+      sendToEsp(API_URLS.wheel, {
+        period: parseFloat(wheelPeriod),
+        direction: wheelDirection
+      });
+    };
+
+    // --- Color Cycle Mode Logic ---
+    const addColorToList = () => {
+      const hex = activeHexInput.value;
+      if (!hex) return;
+
+      colorCycleArray.push(hex);
+      updateColorListUI();
+    };
+
+    const updateColorListUI = () => {
+      colorList.innerHTML = '';
+      colorCycleArray.forEach((hex, index) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center space-x-3 p-2 bg-gray-800 rounded-lg cursor-grab';
+        li.setAttribute('draggable', true);
+        li.setAttribute('data-index', index);
+        li.innerHTML = `
+                <div class="w-8 h-8 rounded-full" style="background-color: ${hex};"></div>
+                <span class="flex-grow">${hex}</span>
+                <button class="remove-color-btn text-red-400 hover:text-red-500 transition-colors" data-index="${index}">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+        colorList.appendChild(li);
+      });
+
+      // Add event listeners for new elements
+      document.querySelectorAll('.remove-color-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = e.currentTarget.getAttribute('data-index');
+          colorCycleArray.splice(index, 1);
+          updateColorListUI();
+        });
+      });
+
+      // Add drag and drop listeners
+      const listItems = colorList.querySelectorAll('li');
+      listItems.forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+      });
+    };
+
+    let draggedItem = null;
+    function handleDragStart(e) {
+      draggedItem = e.target;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', e.target.getAttribute('data-index'));
+      setTimeout(() => draggedItem.classList.add('hidden'), 0);
+    }
+    function handleDragOver(e) {
       e.preventDefault();
-      const r = document.getElementById('r').value;
-      const g = document.getElementById('g').value;
-      const b = document.getElementById('b').value;
-      sendGetRequest('rgb', {r, g, b});
+      const target = e.target.closest('li');
+      if (target && target !== draggedItem) {
+        const boundingBox = target.getBoundingClientRect();
+        const offset = boundingBox.y + (boundingBox.height / 2);
+        if (e.clientY < offset) {
+          colorList.insertBefore(draggedItem, target);
+        } else {
+          colorList.insertBefore(draggedItem, target.nextSibling);
+        }
+      }
+    }
+    function handleDrop(e) {
+      e.preventDefault();
+      const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIndex = Array.from(colorList.children).indexOf(draggedItem);
+      const [movedItem] = colorCycleArray.splice(fromIndex, 1);
+      colorCycleArray.splice(toIndex, 0, movedItem);
+      updateColorListUI();
+    }
+    function handleDragEnd() {
+      draggedItem.classList.remove('hidden');
+      draggedItem = null;
+      updateColorListUI();
+    }
+
+    const uploadColorCycle = () => {
+      if (colorCycleArray.length === 0) {
+        alert("Please add at least one color to the list.");
+        return;
+      }
+      const hexString = colorCycleArray.map(hex => hex.substring(1)).join(',');
+      sendToEsp(API_URLS.cycle, {
+        colors: hexString,
+        random: randomCycleToggle.checked ? 'true' : 'false'
+      });
+    };
+
+    // --- Event Listeners ---
+    window.addEventListener('load', () => {
+      switchTab('rgb');
+      drawHsvCanvas();
+      drawKelvinSlider();
+      updateWheelUI();
     });
 
-    // Kelvin Form Handler
-    document.getElementById('kelvinForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const kelvin = document.getElementById('kelvin').value;
-      const brightness = document.getElementById('brightness').value;
-      sendGetRequest('kelvin', {kelvin, brightness});
+    // Tab buttons
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // Wheel Form Handler
-    document.getElementById('wheelForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const period = document.getElementById('period').value;
-      const direction = document.querySelector('input[name="direction"]:checked').value;
-      sendGetRequest('wheel', {period, direction});
+    // RGB HSV Canvas
+    hsvCanvas.addEventListener('mousedown', (e) => {isDragging = true; updateFromCanvas(e);});
+    hsvCanvas.addEventListener('mousemove', updateFromCanvas);
+    hsvCanvas.addEventListener('mouseup', () => isDragging = false);
+    hsvCanvas.addEventListener('mouseleave', () => isDragging = false);
+    hsvCanvas.addEventListener('touchstart', (e) => {isDragging = true; e.preventDefault(); updateFromCanvas(e);});
+    hsvCanvas.addEventListener('touchmove', (e) => {e.preventDefault(); updateFromCanvas(e);});
+    hsvCanvas.addEventListener('touchend', () => isDragging = false);
+
+    // RGB Sliders and Hex
+    hueSlider.addEventListener('input', updateHsvFromSliders);
+    saturationSlider.addEventListener('input', updateHsvFromSliders);
+    valueSlider.addEventListener('input', () => {
+      updateHsvFromSliders();
+      drawHsvCanvas();
+    });
+    hexInput.addEventListener('change', () => {
+      const hex = hexInput.value;
+      const rgb = chroma(hex).rgb();
+      const hsv = chroma(hex).hsv();
+      currentRGB = {r: rgb[0], g: rgb[1], b: rgb[2]};
+      currentHSV = {h: hsv[0], s: hsv[1], v: hsv[2]};
+      updateHsvSliders();
+      drawHsvCanvas();
+      debouncedSendRgb();
     });
 
-    // Cycle Form Handler
-    document.getElementById('cycleForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const colors = document.getElementById('colors').value;
-      const random = document.getElementById('random').checked;
-      sendGetRequest('cycle', {colors, random});
+    // Transition Duration Slider
+    transitionDurationSlider.addEventListener('input', (e) => {
+      transitionDurationValue.textContent = parseFloat(e.target.value).toFixed(1);
+      debouncedSendTransitionDuration();
+    });
+    const debouncedSendTransitionDuration = debounce(() => {
+      sendToEsp(API_URLS.setTransitionDuration, {duration: transitionDurationSlider.value});
+    }, 100);
+
+    // Transition Easing Dropdown
+    setupEasingDropdown('transition-easing-dropdown', 'transition-easing-label', 'transition-easing-menu', (easingName) => {
+      sendToEsp(API_URLS.setTransitionEasing, {easing: easingName});
     });
 
-    // Cycle Duration Form Handler
-    document.getElementById('cycleDurationForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const duration = document.getElementById('cycleDuration').value;
-      sendGetRequest('setCycleDuration', {duration});
+    // Kelvin Canvas
+    kelvinCanvas.kelvinValue = 6500; // Default
+    kelvinCanvas.addEventListener('mousedown', (e) => {
+      const rect = kelvinCanvas.getBoundingClientRect();
+      kelvinCanvas.kelvinValue = 2000 + (e.clientX - rect.left) / rect.width * 4500;
+      updateKelvinUI();
+      debouncedSendKelvin();
     });
 
-    // Cycle Easing Form Handler
-    document.getElementById('cycleEasingForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const easing = document.getElementById('cycleEasing').value;
-      sendGetRequest('setCycleEasing', {easing});
+    kelvinBrightnessSlider.addEventListener('input', () => {
+      updateKelvinUI();
+      debouncedSendKelvin();
     });
 
-    // Transition Duration Form Handler
-    document.getElementById('transitionDurationForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const duration = document.getElementById('transitionDuration').value;
-      sendGetRequest('setTransitionDuration', {duration});
+    // Wheel Tab
+    wheelPeriodSlider.addEventListener('input', (e) => {
+      wheelPeriod = parseFloat(e.target.value).toFixed(1);
+      updateWheelUI();
+      sendWheelMode();
+    });
+    wheelDirectionClockwise.addEventListener('click', () => {
+      wheelDirection = 'clockwise';
+      wheelDirectionClockwise.classList.add('bg-blue-500');
+      wheelDirectionCounter.classList.remove('bg-blue-500');
+      updateWheelUI();
+      sendWheelMode();
+    });
+    wheelDirectionCounter.addEventListener('click', () => {
+      wheelDirection = 'counterclockwise';
+      wheelDirectionCounter.classList.add('bg-blue-500');
+      wheelDirectionClockwise.classList.remove('bg-blue-500');
+      updateWheelUI();
+      sendWheelMode();
     });
 
-    // Transition Easing Form Handler
-    document.getElementById('transitionEasingForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const easing = document.getElementById('transitionEasing').value;
-      sendGetRequest('setTransitionEasing', {easing});
+    // Cycle Tab HSV Canvas
+    cycleHsvCanvas.addEventListener('mousedown', (e) => {isDragging = true; updateFromCanvas(e);});
+    cycleHsvCanvas.addEventListener('mousemove', updateFromCanvas);
+    cycleHsvCanvas.addEventListener('mouseup', () => isDragging = false);
+    cycleHsvCanvas.addEventListener('mouseleave', () => isDragging = false);
+    cycleHsvCanvas.addEventListener('touchstart', (e) => {isDragging = true; e.preventDefault(); updateFromCanvas(e);});
+    cycleHsvCanvas.addEventListener('touchmove', (e) => {e.preventDefault(); updateFromCanvas(e);});
+    cycleHsvCanvas.addEventListener('touchend', () => isDragging = false);
+
+    // Cycle Tab Sliders and Hex
+    cycleHueSlider.addEventListener('input', updateHsvFromSliders);
+    cycleSaturationSlider.addEventListener('input', updateHsvFromSliders);
+    cycleValueSlider.addEventListener('input', () => {
+      updateHsvFromSliders();
+      drawHsvCanvas();
     });
+    cycleHexInput.addEventListener('change', () => {
+      const hex = cycleHexInput.value;
+      const rgb = chroma(hex).rgb();
+      const hsv = chroma(hex).hsv();
+      currentRGB = {r: rgb[0], g: rgb[1], b: rgb[2]};
+      currentHSV = {h: hsv[0], s: hsv[1], v: hsv[2]};
+      updateHsvSliders();
+      drawHsvCanvas();
+    });
+
+    // Cycle Tab Buttons
+    addColorBtn.addEventListener('click', addColorToList);
+    uploadCycleBtn.addEventListener('click', uploadColorCycle);
+
+    // Cycle Duration and Easing
+    cycleDurationSlider.addEventListener('input', (e) => {
+      cycleDurationValue.textContent = parseFloat(e.target.value).toFixed(1);
+      debouncedSendCycleDuration();
+    });
+    const debouncedSendCycleDuration = debounce(() => {
+      sendToEsp(API_URLS.setCycleDuration, {duration: cycleDurationSlider.value});
+    }, 100);
+
+    setupEasingDropdown('cycle-easing-dropdown', 'cycle-easing-label', 'cycle-easing-menu', (easingName) => {
+      sendToEsp(API_URLS.setCycleEasing, {easing: easingName});
+    });
+
   </script>
+
 </body>
 
 </html>

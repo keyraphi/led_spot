@@ -52,16 +52,24 @@ void SpotlightServer::handleSetRGB() {
 }
 
 void SpotlightServer::handleSetKelvin() {
+  Serial.print("handleSetKelvin() called: ");
   float kelvin = getFloatArg("kelvin", 6500.0);
   float brightness = getFloatArg("brightness", 1.0);
+
+  Serial.printf("decoded kelvin: %f, decoded brightness %f\n", kelvin,
+                brightness);
   _spotlight->setColorTemperature(kelvin, brightness);
   _server.send(200, "text/plain", "OK");
 }
 
 void SpotlightServer::handleSetWheelMode() {
+  Serial.print("handleSetWheelMode() called: ");
   float period = getFloatArg("period", 10.0);
   String directionStr =
       _server.hasArg("direction") ? _server.arg("direction") : "clockwise";
+
+  Serial.printf("period: %f, direction %s\n", period,
+                directionStr.c_str());
   Spotlight::RotationDirection direction =
       Spotlight::RotationDirection::Clockwise;
   if (directionStr.equalsIgnoreCase("counterclockwise")) {
@@ -72,6 +80,7 @@ void SpotlightServer::handleSetWheelMode() {
 }
 
 void SpotlightServer::handleSetCycleMode() {
+  Serial.print("handleSetCycleMode() called: ");
   if (!_server.hasArg("colors")) {
     _server.send(400, "text/plain", "Missing colors parameter");
     return;
@@ -80,6 +89,10 @@ void SpotlightServer::handleSetCycleMode() {
   String colorsStr = _server.arg("colors");
   bool isRandom = _server.hasArg("random") &&
                   _server.arg("random").equalsIgnoreCase("true");
+
+  Serial.printf("colors: %s, isRandom %d\n", colorsStr.c_str(),
+      isRandom);
+
 
   ColorSpace::RGB colors[Constants::MAX_COLORS];
   size_t count = 0;
@@ -102,38 +115,46 @@ void SpotlightServer::handleSetCycleMode() {
 }
 
 void SpotlightServer::handleSetCycleDuration() {
+  Serial.print("handleSetCycleDuration() called: ");
   float duration = getFloatArg("duration", 2.0);
+  Serial.printf("duration: %f\n", duration);
   _spotlight->setCycleDuration(duration);
   _server.send(200, "text/plain", "OK");
 }
 
 void SpotlightServer::handleSetCycleEasing() {
+  Serial.print("handleSetCycleEasing() called: ");
   String easingStr =
       _server.hasArg("easing") ? _server.arg("easing") : "linear";
+  Serial.printf("easing: %s\n", easingStr.c_str());
   Easing::EasingFunction easing = Easing::easingFromString(easingStr);
   _spotlight->setCycleEasing(easing);
   _server.send(200, "text/plain", "OK");
 }
 
 void SpotlightServer::handleSetTransitionDuration() {
+  Serial.print("handleSetTransitionDuration() called: ");
   float duration = getFloatArg("duration", 0.2);
+  Serial.printf("duration: %f\n", duration);
   _spotlight->setTransitionDuration(duration);
   _server.send(200, "text/plain", "OK");
 }
 
 void SpotlightServer::handleSetTransitionEasing() {
+  Serial.print("handleSetTransitionEasing() called: ");
   String easingStr =
       _server.hasArg("easing") ? _server.arg("easing") : "cubic-in-out";
+  Serial.printf("easing: %s\n", easingStr.c_str());
   Easing::EasingFunction easing = Easing::easingFromString(easingStr);
   _spotlight->setTransitionEasing(easing);
   _server.send(200, "text/plain", "OK");
 }
 
 // Private helper to serve files from LittleFS
-bool SpotlightServer::handleFileRequest(const String& path) {
+bool SpotlightServer::handleFileRequest(const String &path) {
   Serial.print("handleFileRequest called for path: ");
   Serial.println(path);
-  
+
   String fullPath = path;
   if (fullPath.endsWith("/")) {
     fullPath += "index.html"; // Serve index.html for root requests
@@ -141,7 +162,7 @@ bool SpotlightServer::handleFileRequest(const String& path) {
 
   Serial.print("Checking for file at fullPath: ");
   Serial.println(fullPath);
-  
+
   // Check if the file exists and has a content type
   String contentType = getContentType(fullPath);
   if (LittleFS.exists(fullPath)) {
@@ -156,20 +177,27 @@ bool SpotlightServer::handleFileRequest(const String& path) {
     Serial.println("File served successfully.");
     return true;
   }
-  
+
   Serial.println("File does NOT exist.");
   return false;
 }
 
 // Private helper to get content type from file extension
-String SpotlightServer::getContentType(const String& filename) {
-  if (filename.endsWith(".html")) return "text/html";
-  if (filename.endsWith(".css")) return "text/css";
-  if (filename.endsWith(".js")) return "application/javascript";
-  if (filename.endsWith(".json")) return "application/json";
-  if (filename.endsWith(".png")) return "image/png";
-  if (filename.endsWith(".jpg")) return "image/jpeg";
-  if (filename.endsWith(".gif")) return "image/gif";
+String SpotlightServer::getContentType(const String &filename) {
+  if (filename.endsWith(".html"))
+    return "text/html";
+  if (filename.endsWith(".css"))
+    return "text/css";
+  if (filename.endsWith(".js"))
+    return "application/javascript";
+  if (filename.endsWith(".json"))
+    return "application/json";
+  if (filename.endsWith(".png"))
+    return "image/png";
+  if (filename.endsWith(".jpg"))
+    return "image/jpeg";
+  if (filename.endsWith(".gif"))
+    return "image/gif";
   return "text/plain";
 }
 
@@ -246,8 +274,7 @@ void SpotlightServer::update() {
   MDNS.update();
 }
 
-
-void SpotlightServer::listDir(const char* dirname, uint8_t numTabs) {
+void SpotlightServer::listDir(const char *dirname, uint8_t numTabs) {
   Serial.printf("Listing directory: %s\n", dirname);
 
   Dir root = LittleFS.openDir(dirname);
@@ -257,7 +284,7 @@ void SpotlightServer::listDir(const char* dirname, uint8_t numTabs) {
     for (uint8_t i = 0; i < numTabs; i++) {
       Serial.print('\t');
     }
-    Serial.printf(" - %s, size: %lu\n", f.name(), f.size());
+    Serial.printf(" - %s, size: %u\n", f.name(), f.size());
     f.close();
   }
 }
