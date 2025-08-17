@@ -333,7 +333,7 @@
       <div id="kelvin-tab" class="tab-content hidden">
         <h2 class="text-xl font-bold mb-4">Set Color Temperature</h2>
 
-        <p id="kelvin-label" class="text-center text-lg font-bold mb-4">6500 K</p>
+        <p id="kelvin-label" class="text-center text-lg font-bold mb-4">4500 K</p>
 
         <!-- Kelvin slider -->
         <div class="relative mb-6 bg-black rounded-lg p-2">
@@ -836,8 +836,8 @@
       const gradient = ctx.createLinearGradient(0, 0, width, 0);
 
       // Kelvin range
-      const startKelvin = 2000;
-      const endKelvin = 6500;
+      const startKelvin = 1500;
+      const endKelvin = 10000;
       const kelvinStep = (endKelvin - startKelvin) / 100;
 
       for (let i = 0; i <= 100; i++) {
@@ -1061,10 +1061,10 @@
     });
 
     // Kelvin Canvas
-    kelvinCanvas.kelvinValue = 6500; // Default
+    kelvinCanvas.kelvinValue = 4500; // Default
     kelvinCanvas.addEventListener('mousedown', (e) => {
       const rect = kelvinCanvas.getBoundingClientRect();
-      kelvinCanvas.kelvinValue = 2000 + (e.clientX - rect.left) / rect.width * 4500;
+      kelvinCanvas.kelvinValue = 1500 + (e.clientX - rect.left) / rect.width * (10000-1500);
       updateKelvinUI();
       debouncedSendKelvin();
     });
