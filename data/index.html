@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotlight Controller</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 sm:p-8">
+  <div class="max-w-4xl mx-auto space-y-8">
+    <!-- Main Header -->
+    <header class="text-center">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Spotlight Controller</h1>
+      <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Control your ESP8266 spotlight with this simple web
+        interface.</p>
+    </header>
+
+    <div id="statusMessage" class="hidden p-4 rounded-md text-sm text-center"></div>
+
+    <!-- Endpoints Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- RGB Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set RGB Color</h2>
+        <form id="rgbForm" class="space-y-4">
+          <div>
+            <label for="r" class="block text-sm font-medium">Red (0-255)</label>
+            <input type="number" id="r" value="255" min="0" max="255"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <div>
+            <label for="g" class="block text-sm font-medium">Green (0-255)</label>
+            <input type="number" id="g" value="0" min="0" max="255"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <div>
+            <label for="b" class="block text-sm font-medium">Blue (0-255)</label>
+            <input type="number" id="b" value="0" min="0" max="255"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Set RGB
+          </button>
+        </form>
+      </div>
+
+      <!-- Kelvin Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Kelvin Color</h2>
+        <form id="kelvinForm" class="space-y-4">
+          <div>
+            <label for="kelvin" class="block text-sm font-medium">Kelvin (1500-10000)</label>
+            <input type="number" id="kelvin" value="6500" min="1500" max="10000"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <div>
+            <label for="brightness" class="block text-sm font-medium">Brightness (0.0-1.0)</label>
+            <input type="number" id="brightness" value="1.0" min="0.0" max="1.0" step="0.01"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Set Kelvin
+          </button>
+        </form>
+      </div>
+
+      <!-- Color Wheel Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Color Wheel Mode</h2>
+        <form id="wheelForm" class="space-y-4">
+          <div>
+            <label for="period" class="block text-sm font-medium">Period (seconds)</label>
+            <input type="number" id="period" value="10" min="0" step="0.1"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium">Direction</label>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center">
+                <input id="clockwise" type="radio" name="direction" value="clockwise" checked
+                  class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                <label for="clockwise" class="ml-2 text-sm">Clockwise</label>
+              </div>
+              <div class="flex items-center">
+                <input id="counterclockwise" type="radio" name="direction" value="counterclockwise"
+                  class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                <label for="counterclockwise" class="ml-2 text-sm">Counter-clockwise</label>
+              </div>
+            </div>
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Start Color Wheel
+          </button>
+        </form>
+      </div>
+
+      <!-- Color Cycle Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Color Cycle Mode</h2>
+        <form id="cycleForm" class="space-y-4">
+          <div>
+            <label for="colors" class="block text-sm font-medium">Colors (comma-separated hex)</label>
+            <textarea id="colors" rows="2"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2"
+              placeholder="FF0000,00FF00,0000FF"></textarea>
+          </div>
+          <div class="flex items-center">
+            <input id="random" type="checkbox"
+              class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+            <label for="random" class="ml-2 block text-sm">Random Order</label>
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Start Color Cycle
+          </button>
+        </form>
+      </div>
+
+      <!-- Cycle Duration Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Cycle Duration</h2>
+        <form id="cycleDurationForm" class="space-y-4">
+          <div>
+            <label for="cycleDuration" class="block text-sm font-medium">Duration (seconds)</label>
+            <input type="number" id="cycleDuration" value="2.0" min="0" step="0.1"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Set Duration
+          </button>
+        </form>
+      </div>
+
+      <!-- Cycle Easing Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Cycle Easing</h2>
+        <form id="cycleEasingForm" class="space-y-4">
+          <div>
+            <label for="cycleEasing" class="block text-sm font-medium">Easing Function</label>
+            <select id="cycleEasing"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+              <option value="linear">linear</option>
+              <option value="sine-in-out">sine-in-out</option>
+              <option value="quad-in-out">quad-in-out</option>
+              <option value="cubic-in-out" selected>cubic-in-out</option>
+              <option value="quart-in-out">quart-in-out</option>
+              <option value="quint-in-out">quint-in-out</option>
+              <option value="circ-in-out">circ-in-out</option>
+              <option value="elastic-in-out">elastic-in-out</option>
+              <option value="back-in-out">back-in-out</option>
+              <option value="bounce-in-out">bounce-in-out</option>
+            </select>
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Set Easing
+          </button>
+        </form>
+      </div>
+
+      <!-- Transition Duration Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Transition Duration</h2>
+        <form id="transitionDurationForm" class="space-y-4">
+          <div>
+            <label for="transitionDuration" class="block text-sm font-medium">Duration (seconds)</label>
+            <input type="number" id="transitionDuration" value="0.2" min="0" step="0.1"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Set Duration
+          </button>
+        </form>
+      </div>
+
+      <!-- Transition Easing Form -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold mb-4">Set Transition Easing</h2>
+        <form id="transitionEasingForm" class="space-y-4">
+          <div>
+            <label for="transitionEasing" class="block text-sm font-medium">Easing Function</label>
+            <select id="transitionEasing"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm p-2">
+              <option value="linear">linear</option>
+              <option value="sine-in-out">sine-in-out</option>
+              <option value="quad-in-out">quad-in-out</option>
+              <option value="cubic-in-out" selected>cubic-in-out</option>
+              <option value="quart-in-out">quart-in-out</option>
+              <option value="quint-in-out">quint-in-out</option>
+              <option value="circ-in-out">circ-in-out</option>
+              <option value="elastic-in-out">elastic-in-out</option>
+              <option value="back-in-out">back-in-out</option>
+              <option value="bounce-in-out">bounce-in-out</option>
+            </select>
+          </div>
+          <button type="submit"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Set Easing
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+  <script>
+    // Helper function to show status messages
+    function showStatus(message, isSuccess = true) {
+      const statusDiv = document.getElementById('statusMessage');
+      statusDiv.textContent = message;
+      statusDiv.classList.remove('hidden', 'bg-red-200', 'text-red-800', 'bg-green-200', 'text-green-800');
+      if (isSuccess) {
+        statusDiv.classList.add('bg-green-200', 'text-green-800');
+      } else {
+        statusDiv.classList.add('bg-red-200', 'text-red-800');
+      }
+    }
+
+    // Generic function to send a GET request
+    async function sendGetRequest(endpoint, params = {}) {
+      // Use window.location.host, which is the IP or hostname of the device itself.
+      const url = new URL(`http://${window.location.host}/${endpoint}`);
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+      showStatus('Sending request...', true);
+
+      try {
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          mode: 'no-cors' // Use no-cors mode to avoid CORS issues
+        });
+
+        if (response.ok || response.type === 'opaque') {
+          showStatus(`Successfully sent request to /${endpoint}`, true);
+        } else {
+          showStatus(`Failed to send request to /${endpoint}. Status: ${response.status}`, false);
+        }
+      } catch (error) {
+        showStatus(`An error occurred: ${error.message}`, false);
+      }
+    }
+
+    // RGB Form Handler
+    document.getElementById('rgbForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const r = document.getElementById('r').value;
+      const g = document.getElementById('g').value;
+      const b = document.getElementById('b').value;
+      sendGetRequest('rgb', {r, g, b});
+    });
+
+    // Kelvin Form Handler
+    document.getElementById('kelvinForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const kelvin = document.getElementById('kelvin').value;
+      const brightness = document.getElementById('brightness').value;
+      sendGetRequest('kelvin', {kelvin, brightness});
+    });
+
+    // Wheel Form Handler
+    document.getElementById('wheelForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const period = document.getElementById('period').value;
+      const direction = document.querySelector('input[name="direction"]:checked').value;
+      sendGetRequest('wheel', {period, direction});
+    });
+
+    // Cycle Form Handler
+    document.getElementById('cycleForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const colors = document.getElementById('colors').value;
+      const random = document.getElementById('random').checked;
+      sendGetRequest('cycle', {colors, random});
+    });
+
+    // Cycle Duration Form Handler
+    document.getElementById('cycleDurationForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const duration = document.getElementById('cycleDuration').value;
+      sendGetRequest('setCycleDuration', {duration});
+    });
+
+    // Cycle Easing Form Handler
+    document.getElementById('cycleEasingForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const easing = document.getElementById('cycleEasing').value;
+      sendGetRequest('setCycleEasing', {easing});
+    });
+
+    // Transition Duration Form Handler
+    document.getElementById('transitionDurationForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const duration = document.getElementById('transitionDuration').value;
+      sendGetRequest('setTransitionDuration', {duration});
+    });
+
+    // Transition Easing Form Handler
+    document.getElementById('transitionEasingForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const easing = document.getElementById('transitionEasing').value;
+      sendGetRequest('setTransitionEasing', {easing});
+    });
+  </script>
+</body>
+
+</html>

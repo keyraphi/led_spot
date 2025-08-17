@@ -7,6 +7,8 @@
 #include "ColorSpace.h"
 #include "Easing.h"
 #include "config.h"
+#include <ESP8266mDNS.h>
+#include <LittleFS.h>
 
 // --- Helper functions for the web server ---
 
@@ -40,9 +42,11 @@ int SpotlightServer::getIntArg(const String &name, int defaultValue) {
 // --- API Endpoint Handlers ---
 
 void SpotlightServer::handleSetRGB() {
+  Serial.print("handleSetRGB() called: ");
   uint8_t r = getIntArg("r", 0);
   uint8_t g = getIntArg("g", 0);
   uint8_t b = getIntArg("b", 0);
+  Serial.printf("decoded rgb: %d, %d, %d\n", r, g, b);
   _spotlight->setRGB(r, g, b);
   _server.send(200, "text/plain", "OK");
 }
@@ -125,6 +129,50 @@ void SpotlightServer::handleSetTransitionEasing() {
   _server.send(200, "text/plain", "OK");
 }
 
+// Private helper to serve files from LittleFS
+bool SpotlightServer::handleFileRequest(const String& path) {
+  Serial.print("handleFileRequest called for path: ");
+  Serial.println(path);
+  
+  String fullPath = path;
+  if (fullPath.endsWith("/")) {
+    fullPath += "index.html"; // Serve index.html for root requests
+  }
+
+  Serial.print("Checking for file at fullPath: ");
+  Serial.println(fullPath);
+  
+  // Check if the file exists and has a content type
+  String contentType = getContentType(fullPath);
+  if (LittleFS.exists(fullPath)) {
+    Serial.println("File exists!");
+    File file = LittleFS.open(fullPath, "r");
+    if (!file) {
+      Serial.println("Failed to open file for reading.");
+      return false;
+    }
+    _server.streamFile(file, contentType);
+    file.close();
+    Serial.println("File served successfully.");
+    return true;
+  }
+  
+  Serial.println("File does NOT exist.");
+  return false;
+}
+
+// Private helper to get content type from file extension
+String SpotlightServer::getContentType(const String& filename) {
+  if (filename.endsWith(".html")) return "text/html";
+  if (filename.endsWith(".css")) return "text/css";
+  if (filename.endsWith(".js")) return "application/javascript";
+  if (filename.endsWith(".json")) return "application/json";
+  if (filename.endsWith(".png")) return "image/png";
+  if (filename.endsWith(".jpg")) return "image/jpeg";
+  if (filename.endsWith(".gif")) return "image/gif";
+  return "text/plain";
+}
+
 // Constructor
 SpotlightServer::SpotlightServer(Spotlight *spotlightInstance)
     : _server(80), _spotlight(spotlightInstance) {}
@@ -132,6 +180,14 @@ SpotlightServer::SpotlightServer(Spotlight *spotlightInstance)
 // Initializes the pins and sets up WiFi and WebServer
 void SpotlightServer::begin() {
   Serial.begin(115200);
+
+  // Initialize the file system first
+  if (!LittleFS.begin()) {
+    Serial.println("An Error has occurred while mounting LittleFS");
+    return;
+  }
+  // List all files on the file system for debugging purposes
+  listDir("/", 0);
 
   // Connect to WiFi
   Serial.print("Connecting to ");
@@ -145,6 +201,14 @@ void SpotlightServer::begin() {
   Serial.println("WiFi connected!");
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Initialize mDNS to resolve the hostname "spotlight.local"
+  if (MDNS.begin("spotlight")) {
+    Serial.println("mDNS responder started");
+  } else {
+    Serial.println("Error setting up mDNS responder!");
+  }
+  MDNS.addService("http", "tcp", 80);
 
   // Register API endpoints. The std::bind() is used to pass the member
   // function and the 'this' pointer to the server.
@@ -164,6 +228,13 @@ void SpotlightServer::begin() {
   _server.on("/setTransitionEasing", HTTP_GET,
              std::bind(&SpotlightServer::handleSetTransitionEasing, this));
 
+  // catch-all handler for all GET requests to serve files from LittleFS
+  _server.onNotFound([this]() {
+    if (!handleFileRequest(_server.uri())) {
+      _server.send(404, "text/plain", "404: Not Found");
+    }
+  });
+
   _server.begin();
   Serial.println("Web server started!");
 }
@@ -172,4 +243,21 @@ void SpotlightServer::begin() {
 void SpotlightServer::update() {
   // Handle incoming client requests
   _server.handleClient();
+  MDNS.update();
+}
+
+
+void SpotlightServer::listDir(const char* dirname, uint8_t numTabs) {
+  Serial.printf("Listing directory: %s\n", dirname);
+
+  Dir root = LittleFS.openDir(dirname);
+
+  while (root.next()) {
+    File f = root.openFile("r");
+    for (uint8_t i = 0; i < numTabs; i++) {
+      Serial.print('\t');
+    }
+    Serial.printf(" - %s, size: %lu\n", f.name(), f.size());
+    f.close();
+  }
 }

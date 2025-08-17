@@ -2,85 +2,61 @@
  * @file spot.cpp
  * @brief Main sketch for the ESP8266 Spotlight controller.
  *
- * This file demonstrates how to use the Spotlight class to control a tri-color
- * LED spotlight. It includes a simple state machine in the main loop to cycle
- * through the different modes (fixed color, color temperature, color wheel,
- * and color cycle mode).
+ * This file sets up the Spotlight hardware and the web server,
+ * then continuously runs their update loops.
  */
 
-#include "Constants.h"
+#include <Arduino.h>
 #include "Spotlight.h"
+#include "SpotlightServer.h"
+#include "pins_arduino.h"
 
 // Define the pins for your RGB LEDs.
 // You must connect the anodes of the LEDs to VCC and the cathodes to the
 // respective pins through a resistor.
-const int RED_PIN = D5;   // Example GPIO pin for the Red LED
-// const int GREEN_PIN = D6; // Example GPIO pin for the Green LED
-const int GREEN_PIN = LED_BUILTIN;
-const int BLUE_PIN = D7;  // Example GPIO pin for the Blue LED
+const int RED_PIN = D5;
+const int GREEN_PIN = D6;
+const int BLUE_PIN = D7;
 
-// Create an instance of the Spotlight class.
+// Create instances of the Spotlight and SpotlightServer classes.
+// The SpotlightServer is passed a reference to the Spotlight object
+// so it can control the hardware.
 Spotlight spotlight(RED_PIN, GREEN_PIN, BLUE_PIN);
+SpotlightServer spotlightServer(&spotlight);
 
-// State machine variables for cycling through the modes.
-enum Mode { RGB_MODE, KELVIN_MODE, COLOR_WHEEL_MODE, COLOR_CYCLE_MODE };
-
-Mode currentMode = RGB_MODE;
-unsigned long modeStartTime = 0;
-const unsigned long modeDuration = 10000; // 10 seconds per mode
-
+/**
+ * @brief Arduino setup function.
+ *
+ * This function runs once when the ESP8266 boots up. It initializes
+ * serial communication, the spotlight hardware, and the web server.
+ */
 void setup() {
+  // Initialize Serial communication for debugging output.
   Serial.begin(115200);
-  Serial.println("\nSpotlight Controller Started!");
+  Serial.println("\nSpotlight Controller starting up...");
 
-  // Initialize the spotlight and set the initial mode.
+  // Initialize the spotlight's hardware pins.
   spotlight.begin();
-  spotlight.setRGB(255, 0, 0); // Start with a fixed red color
-  modeStartTime = millis();
+
+  // Start the web server and connect to WiFi.
+  // This function also initializes LittleFS and mDNS.
+  spotlightServer.begin();
+
+  Serial.println("Setup complete. Ready to serve clients.");
 }
 
+/**
+ * @brief Arduino main loop function.
+ *
+ * This function runs continuously after setup completes. It calls the
+ * update methods for both the server and the spotlight, ensuring both
+ * are responsive and animations continue smoothly.
+ */
 void loop() {
-  // Always call the update() method to handle animations and transitions.
+  // Handle any incoming HTTP requests. This must be called frequently.
+  spotlightServer.update();
+
+  // Update the spotlight's animation state. This handles all
+  // smooth color transitions and animations without using delay().
   spotlight.update();
-
-  // Simple state machine to cycle through modes every 10 seconds.
-  if (millis() - modeStartTime > modeDuration) {
-    switch (currentMode) {
-    case RGB_MODE: {
-      Serial.println("Switching to Kelvin Mode...");
-      spotlight.setColorTemperature(3000, 1.0); // Warm white
-      currentMode = KELVIN_MODE;
-      break;
-    }
-
-    case KELVIN_MODE: {
-      Serial.println("Switching to Color Wheel Mode...");
-      spotlight.enableColorWheelMode(
-          15.0, Spotlight::RotationDirection::Clockwise); // 15-second rotation
-      currentMode = COLOR_WHEEL_MODE;
-      break;
-    }
-
-    case COLOR_WHEEL_MODE: {
-      Serial.println("Switching to Color Cycle Mode...");
-      // Define an array of colors using the ColorSpace::RGB struct.
-      ColorSpace::RGB colors[] = {{255, 0, 0},   {255, 255, 0}, {0, 255, 0},
-                                  {0, 255, 255}, {0, 0, 255},   {255, 0, 255}};
-      // Set a duration and easing before starting the animation.
-      spotlight.setCycleDuration(2.0);
-      spotlight.setCycleEasing(Easing::EasingFunction::SineInOut);
-      spotlight.enableColorCycleMode(colors, sizeof(colors) / sizeof(colors[0]),
-                                     false); // Not random
-      currentMode = COLOR_CYCLE_MODE;
-      break;
-    }
-    case COLOR_CYCLE_MODE: {
-      Serial.println("Switching back to RGB Mode...");
-      spotlight.setRGB(0, 255, 0); // Fixed green
-      currentMode = RGB_MODE;
-      break;
-    }
-    }
-    modeStartTime = millis();
-  }
 }
